@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { EditMode, ReportRecord } from '@/lib/types';
 import { computeMetrics, validateReport } from '@/lib/calculations';
+import { generateDailyData, generateReps } from '@/lib/generate';
 import { createBlankReport } from '@/lib/demoData';
 import { createReport, getReport, updateReport } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -55,6 +56,17 @@ export function ReportEditor({ mode }: { mode: 'create' | 'edit' }) {
   }
 
   const patch = (p: Partial<ReportRecord>) => setReport({ ...report, ...p });
+
+  const handleGenerate = (repCount: number) => {
+    const hasExisting = report.reps.length > 0 || report.dailyData.length > 0;
+    if (hasExisting && !confirm('This replaces the current rep and daily-data rows with a fresh split of the numbers above. Continue?')) {
+      return;
+    }
+    patch({
+      reps: generateReps(report.inputs, repCount),
+      dailyData: generateDailyData(report.inputs),
+    });
+  };
 
   const handleSave = async (nextStatus: 'draft' | 'published') => {
     setSaving(nextStatus === 'published' ? 'publish' : 'draft');
@@ -127,7 +139,12 @@ export function ReportEditor({ mode }: { mode: 'create' | 'edit' }) {
           />
         </div>
         {activeTab === 'smart' ? (
-          <SmartCalculatorForm inputs={report.inputs} metrics={metrics} onChange={(p) => patch({ inputs: { ...report.inputs, ...p } })} />
+          <SmartCalculatorForm
+            inputs={report.inputs}
+            metrics={metrics}
+            onChange={(p) => patch({ inputs: { ...report.inputs, ...p } })}
+            onGenerate={handleGenerate}
+          />
         ) : (
           <ManualOverridePanel
             naturalMetrics={naturalMetrics}
