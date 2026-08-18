@@ -17,9 +17,9 @@ import { safeDiv } from '@/lib/calculations';
 
 const AXIS_STYLE = { fontSize: 11, fill: 'var(--color-ink-muted)' };
 const GRID_COLOR = 'var(--color-line-soft)';
-const NAVY = '#16233f';
-const EMERALD = '#1f7a5c';
-const NAVY_SOFT_FILL = 'rgba(22,35,63,0.08)';
+const NAVY = '#2454d1';
+const EMERALD = '#17845f';
+const EMERALD_SOFT_FILL = 'rgba(23,132,95,0.10)';
 
 function ChartTooltip({ active, payload, label, formatter }: any) {
   if (!active || !payload?.length) return null;
@@ -86,8 +86,8 @@ export function CumulativeCashChart({
       <AreaChart data={series} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
         <defs>
           <linearGradient id="cashFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={NAVY_SOFT_FILL} />
-            <stop offset="100%" stopColor="rgba(22,35,63,0)" />
+            <stop offset="0%" stopColor={EMERALD_SOFT_FILL} />
+            <stop offset="100%" stopColor="rgba(23,132,95,0)" />
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} stroke={GRID_COLOR} />
@@ -101,13 +101,13 @@ export function CumulativeCashChart({
             return (
               <div className="rounded-lg border border-line bg-surface-raised px-3 py-2 shadow-raised">
                 <div className="text-[11px] font-medium text-ink-muted">Day {label}</div>
-                <div className="text-[12.5px] font-semibold text-navy">{formatCurrency(cash)} cash</div>
+                <div className="text-[12.5px] font-semibold text-positive">{formatCurrency(cash)} cash</div>
                 <div className="text-[12px] text-ink-muted">{formatCurrency(goal)} goal pace</div>
               </div>
             );
           }}
         />
-        <Area type="monotone" dataKey="cumulativeCash" stroke={NAVY} strokeWidth={2} fill="url(#cashFill)" />
+        <Area type="monotone" dataKey="cumulativeCash" stroke={EMERALD} strokeWidth={2} fill="url(#cashFill)" />
         <Line type="linear" dataKey="goalPace" stroke="var(--color-ink-muted)" strokeWidth={1.5} strokeDasharray="4 4" dot={false} />
       </AreaChart>
     </ResponsiveContainer>

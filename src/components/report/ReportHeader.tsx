@@ -4,13 +4,19 @@ import { LiveIndicator } from '@/components/ui/LiveIndicator';
 
 function formatUpdated(iso: string): string {
   try {
-    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return new Date(iso).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   } catch {
     return '';
   }
 }
 
-export function ReportHeader({ report }: { report: ReportRecord }) {
+export function ReportHeader({ report, showLive = true }: { report: ReportRecord; showLive?: boolean }) {
   return (
     <header className="print-avoid-break flex flex-col gap-5 border-b border-line pb-6 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-start gap-4">
@@ -37,7 +43,7 @@ export function ReportHeader({ report }: { report: ReportRecord }) {
       </div>
 
       <div className="flex flex-col items-start gap-1.5 sm:items-end">
-        {report.status === 'published' && <LiveIndicator />}
+        {showLive && report.status === 'published' && <LiveIndicator />}
         <div className="text-[12.5px] text-ink-soft">
           Confidential Performance Report <span className="text-ink-muted">&middot; {DATA_STATUS_LABEL[report.dataStatus]}</span>
         </div>

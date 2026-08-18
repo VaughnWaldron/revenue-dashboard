@@ -8,31 +8,32 @@
   --font-sans: "Geist Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
 
-  /* Surfaces */
-  --color-surface: #faf9f7;
+  /* Surfaces — true white/cool-neutral, no warm cream tint */
+  --color-surface: #ffffff;
   --color-surface-raised: #ffffff;
-  --color-surface-sunken: #f4f2ee;
+  --color-surface-sunken: #f6f7f9;
 
-  /* Text */
-  --color-ink: #1c1d21;
-  --color-ink-soft: #4a4c56;
-  --color-ink-muted: #7a7d89;
+  /* Text — cool neutrals */
+  --color-ink: #15171c;
+  --color-ink-soft: #494e59;
+  --color-ink-muted: #80858f;
 
   /* Borders */
-  --color-line: #e6e4df;
-  --color-line-soft: #efeee9;
+  --color-line: #e3e5ea;
+  --color-line-soft: #edeef2;
 
-  /* Brand / semantic */
-  --color-navy: #16233f;
-  --color-navy-soft: #2d3f66;
-  --color-navy-tint: #eef1f7;
+  /* Brand / semantic — one consistent accent used throughout charts, active
+     states, and controls, per the reference products' single-color systems */
+  --color-navy: #2454d1;
+  --color-navy-soft: #1b3fa6;
+  --color-navy-tint: #eaf0fd;
 
-  --color-positive: #1f7a5c;
-  --color-positive-tint: #e7f3ee;
-  --color-warning: #9a6b1f;
-  --color-warning-tint: #faf1e1;
-  --color-negative: #a3372f;
-  --color-negative-tint: #f8ebe9;
+  --color-positive: #17845f;
+  --color-positive-tint: #e5f4ee;
+  --color-warning: #a3690f;
+  --color-warning-tint: #faf0dd;
+  --color-negative: #b6362c;
+  --color-negative-tint: #faeae8;
 
   --shadow-soft: 0 1px 2px rgba(28, 29, 33, 0.04), 0 4px 16px rgba(28, 29, 33, 0.04);
   --shadow-raised: 0 2px 6px rgba(28, 29, 33, 0.06), 0 10px 30px rgba(28, 29, 33, 0.06);

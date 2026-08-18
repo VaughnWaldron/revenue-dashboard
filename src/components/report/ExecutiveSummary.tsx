@@ -42,7 +42,7 @@ export function ExecutiveSummary({
         <MetricTile label="New Cash" value={inputs.newCash} format="currency" animate={animate} />
         <MetricTile label="Installment Cash" value={inputs.installmentCash} format="currency" animate={animate} />
         <MetricTile label="% of Goal" value={metrics.percentOfGoal} format="percent" tone={goalTone} animate={animate} />
-        <MetricTile label="Remaining Gap" value={metrics.gap} format="currency" tone={metrics.gap > 0 ? 'warning' : 'positive'} animate={animate} />
+        <MetricTile label="Remaining Gap" value={metrics.gap} format="currency" tone={metrics.gap <= 0 ? 'positive' : goalTone} animate={animate} />
         <MetricTile label="Avg Deal Size" value={inputs.avgNewCashPerClose} format="currency" animate={animate} />
         <MetricTile label="Total Closes" value={inputs.totalCloses} format="number" animate={animate} />
         <MetricTile label="Closes to Hit Goal" value={metrics.closesRequired} format="number" animate={animate} />
