@@ -64,8 +64,8 @@ export function SmartCalculatorForm({
         </div>
         <p className="mt-2 text-[12px] text-ink-muted">
           Splits new cash, installments, calls, shows, and closes across {repCount} rep{repCount === 1 ? '' : 's'} on a
-          descending performance curve, and spreads the same totals across days 1–{inputs.currentDay}. Rename reps
-          afterward as needed. This replaces any existing rep and daily-data rows.
+          descending performance curve, and spreads the same totals across days 1–{inputs.currentDay}. Reps get
+          placeholder names you can overwrite with real ones. This replaces any existing rep and daily-data rows.
         </p>
       </div>
     </Card>

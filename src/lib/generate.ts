@@ -1,5 +1,36 @@
 import type { DailyDataPoint, ReportInputs, Rep } from './types';
 
+const FIRST_NAMES = [
+  'Sasha', 'Malik', 'Priya', 'Owen', 'Jordan', 'Elena', 'Marcus', 'Nadia',
+  'Devon', 'Kayla', 'Theo', 'Amara', 'Lucas', 'Simone', 'Ravi', 'Ingrid',
+  'Miles', 'Zara', 'Colin', 'Yuki', 'Diego', 'Freya', 'Andre', 'Lena',
+];
+
+const LAST_NAMES = [
+  'Rivera', 'Osei', 'Chandra', 'Bennett', 'Whitfield', 'Marsh', 'Delgado',
+  'Okafor', 'Sinclair', 'Voss', 'Bianchi', 'Hartley', 'Nakamura', 'Reyes',
+  'Larsen', 'Abara', 'Castellano', 'Ferreira', 'Novak', 'Doyle', 'Kessler',
+  'Amaro', 'Solberg', 'Kimura',
+];
+
+function shuffled<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+/** Unique "First Last" combinations for generated reps — never Rep 1/2/3. */
+function generateRepNames(count: number): string[] {
+  const firsts = shuffled(FIRST_NAMES);
+  const lasts = shuffled(LAST_NAMES);
+  // Zipping two independently-shuffled lists gives every rep a distinct
+  // first AND last name within the batch (no two reps sharing a surname).
+  return Array.from({ length: count }, (_, i) => `${firsts[i % firsts.length]} ${lasts[i % lasts.length]}`);
+}
+
 /**
  * Splits `total` across `weights` as integers that sum exactly to `total`,
  * using the largest-remainder method so proportions stay faithful to the
@@ -44,6 +75,7 @@ export function suggestedRepCount(inputs: ReportInputs): number {
 export function generateReps(inputs: ReportInputs, repCount: number): Rep[] {
   const count = Math.max(1, Math.round(repCount));
   const weights = descendingWeights(count);
+  const names = generateRepNames(count);
 
   const newCash = weightedSplit(inputs.newCash, weights);
   const installmentCash = weightedSplit(inputs.installmentCash, weights);
@@ -53,7 +85,7 @@ export function generateReps(inputs: ReportInputs, repCount: number): Rep[] {
 
   return Array.from({ length: count }, (_, i) => ({
     id: `rep-${Date.now().toString(36)}-${i}`,
-    name: `Rep ${i + 1}`,
+    name: names[i],
     newCash: newCash[i],
     installmentCash: installmentCash[i],
     calls: calls[i],
