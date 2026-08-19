@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react';
 import { cn } from '@/lib/cn';
 
@@ -68,17 +69,50 @@ interface NumberFieldProps {
 }
 
 export function NumberField({ label, hint, overridden, value, onChange, prefix, suffix, min = 0, step = 1, className }: NumberFieldProps) {
+  // Tracks what's actually typed as a string, decoupled from the committed
+  // numeric value — otherwise a controlled `value={0}` snaps back the moment
+  // the field is cleared, and you can never see an empty box to type into.
+  const [text, setText] = useState(() => String(value));
+
+  useEffect(() => {
+    const parsed = text === '' || text === '-' ? 0 : Number(text);
+    if (parsed !== value) setText(String(value));
+    // Only re-sync when the committed value changes from outside this field
+    // (e.g. Generate, switching reports) — not on every local keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  const isEmpty = text === '' || text === '-';
+
+  const handleChange = (raw: string) => {
+    setText(raw);
+    if (raw === '' || raw === '-') {
+      onChange(0);
+      return;
+    }
+    const parsed = Number(raw);
+    if (!Number.isNaN(parsed)) onChange(parsed);
+  };
+
   return (
     <FieldShell label={label} hint={hint} overridden={overridden} className={className}>
-      <div className="flex items-center rounded-lg border border-line bg-surface-raised px-2.5 focus-within:border-navy/40 focus-within:ring-2 focus-within:ring-navy/10">
+      <div
+        className={cn(
+          'flex items-center rounded-lg border bg-surface-raised px-2.5 focus-within:ring-2',
+          isEmpty
+            ? 'border-warning/40 focus-within:border-warning/50 focus-within:ring-warning/10'
+            : 'border-line focus-within:border-navy/40 focus-within:ring-navy/10',
+        )}
+      >
         {prefix && <span className="text-[13px] text-ink-muted">{prefix}</span>}
         <input
           type="number"
           className="w-full min-w-0 bg-transparent px-1.5 py-2 text-[13.5px] tabular-nums text-ink outline-none"
-          value={Number.isFinite(value) ? value : 0}
+          value={text}
           min={min}
           step={step}
-          onChange={(e) => onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder="0"
         />
         {suffix && <span className="text-[13px] text-ink-muted">{suffix}</span>}
       </div>

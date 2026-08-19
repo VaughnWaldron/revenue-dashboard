@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { DailyDataPoint, EditMode, ReportInputs, ReportRecord, Rep, SmartCalcInputs } from '@/lib/types';
+import type { Benchmarks, DailyDataPoint, EditMode, ReportInputs, ReportRecord, Rep, SmartCalcInputs } from '@/lib/types';
 import { computeMetrics, validateReport } from '@/lib/calculations';
 import { createBlankReport } from '@/lib/demoData';
 import { createReport, getReport, updateReport } from '@/lib/api';
@@ -57,12 +57,19 @@ export function ReportEditor({ mode }: { mode: 'create' | 'edit' }) {
 
   const patch = (p: Partial<ReportRecord>) => setReport({ ...report, ...p });
 
-  const handleGenerate = (payload: { inputs: ReportInputs; smartCalcInputs: SmartCalcInputs; reps: Rep[]; dailyData: DailyDataPoint[] }) => {
+  const handleGenerate = (payload: {
+    inputs: ReportInputs;
+    smartCalcInputs: SmartCalcInputs;
+    reps: Rep[];
+    dailyData: DailyDataPoint[];
+    benchmarks?: Benchmarks;
+  }) => {
     const hasExisting = report.reps.length > 0 || report.dailyData.length > 0;
     if (hasExisting && !confirm('This replaces the current rep and daily-data rows with a fresh split of the numbers above. Continue?')) {
       return;
     }
-    patch(payload);
+    const { benchmarks, ...rest } = payload;
+    patch(benchmarks ? { ...rest, benchmarks } : rest);
   };
 
   const handleSave = async (nextStatus: 'draft' | 'published') => {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import type { DailyDataPoint, ReportInputs, ReportRecord, Rep, SmartCalcInputs } from '@/lib/types';
+import type { Benchmarks, DailyDataPoint, ReportInputs, ReportRecord, Rep, SmartCalcInputs } from '@/lib/types';
 import { computeMetrics, safeDiv } from '@/lib/calculations';
-import { callsPerRepPerDay, deriveFromSmartCalc, suggestReps } from '@/lib/smartCalculator';
+import { callsPerRepPerDay, deriveFromSmartCalc, suggestBenchmarks, suggestReps } from '@/lib/smartCalculator';
 import { generateDailyData, generateReps } from '@/lib/generate';
 import { Card, SectionHeading } from '@/components/ui/Card';
 import { NumberField } from '@/components/ui/Field';
@@ -58,7 +58,13 @@ export function SmartCalculatorForm({
   onGenerate,
 }: {
   report: ReportRecord;
-  onGenerate: (payload: { inputs: ReportInputs; smartCalcInputs: SmartCalcInputs; reps: Rep[]; dailyData: DailyDataPoint[] }) => void;
+  onGenerate: (payload: {
+    inputs: ReportInputs;
+    smartCalcInputs: SmartCalcInputs;
+    reps: Rep[];
+    dailyData: DailyDataPoint[];
+    benchmarks?: Benchmarks;
+  }) => void;
 }) {
   const [form, setForm] = useState<FormState>(() => seedFromReport(report));
   const set = <K extends keyof FormState>(key: K) => (value: number) => setForm((f) => ({ ...f, [key]: value }));
@@ -93,11 +99,20 @@ export function SmartCalculatorForm({
       installmentPct: form.installmentPct / 100,
       repCount: form.repCount,
     };
+    // Only auto-fill benchmarks the first time — don't stomp on targets the
+    // admin has already customized by hand.
+    const b = report.benchmarks;
+    const benchmarksUnconfigured = b.monthlyCloses === 0 && b.showRate === 0 && b.closeRate === 0 && b.cashPerShow === 0;
+    const benchmarks = benchmarksUnconfigured
+      ? suggestBenchmarks(form.monthlyGoal, form.avgDealSize, form.installmentPct / 100)
+      : undefined;
+
     onGenerate({
       inputs,
       smartCalcInputs,
       reps: generateReps(inputs, form.repCount),
       dailyData: generateDailyData(inputs),
+      benchmarks,
     });
   };
 
