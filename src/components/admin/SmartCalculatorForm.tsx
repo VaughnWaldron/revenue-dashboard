@@ -1,72 +1,190 @@
 import { useState } from 'react';
-import type { ReportInputs } from '@/lib/types';
-import type { DerivedMetrics } from '@/lib/calculations';
-import { suggestedRepCount } from '@/lib/generate';
+import type { DailyDataPoint, ReportInputs, ReportRecord, Rep, SmartCalcInputs } from '@/lib/types';
+import { computeMetrics, safeDiv } from '@/lib/calculations';
+import { callsPerRepPerDay, deriveFromSmartCalc, suggestReps } from '@/lib/smartCalculator';
+import { generateDailyData, generateReps } from '@/lib/generate';
 import { Card, SectionHeading } from '@/components/ui/Card';
 import { NumberField } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
-import { formatCurrency, formatPercent } from '@/lib/format';
+import { formatCurrency, formatNumber } from '@/lib/format';
+
+interface FormState {
+  totalCashCollected: number;
+  showRatePct: number;
+  closeRatePct: number;
+  avgDealSize: number;
+  monthlyGoal: number;
+  currentDay: number;
+  daysInMonth: number;
+  installmentPct: number;
+  repCount: number;
+}
+
+function seedFromReport(report: ReportRecord): FormState {
+  const stored = report.smartCalcInputs;
+  if (stored) {
+    return {
+      totalCashCollected: stored.totalCashCollected,
+      showRatePct: Math.round(stored.showRate * 1000) / 10,
+      closeRatePct: Math.round(stored.closeRate * 1000) / 10,
+      avgDealSize: report.inputs.avgNewCashPerClose,
+      monthlyGoal: report.inputs.monthlyGoal,
+      currentDay: report.inputs.currentDay,
+      daysInMonth: report.inputs.daysInMonth,
+      installmentPct: Math.round(stored.installmentPct * 1000) / 10,
+      repCount: stored.repCount,
+    };
+  }
+
+  // No stored Smart Calculator state (report created via Manual Edit, or
+  // predates this feature) — reverse-derive reasonable starting values.
+  const metrics = computeMetrics(report.inputs, {});
+  const totalCashCollected = metrics.totalCash;
+  return {
+    totalCashCollected,
+    showRatePct: Math.round(metrics.showRate * 1000) / 10,
+    closeRatePct: Math.round(metrics.closeRate * 1000) / 10,
+    avgDealSize: report.inputs.avgNewCashPerClose,
+    monthlyGoal: report.inputs.monthlyGoal,
+    currentDay: report.inputs.currentDay,
+    daysInMonth: report.inputs.daysInMonth,
+    installmentPct: Math.round(safeDiv(report.inputs.installmentCash, totalCashCollected) * 1000) / 10,
+    repCount: report.reps.length || suggestReps(report.inputs.conductedCalls, report.inputs.currentDay),
+  };
+}
 
 export function SmartCalculatorForm({
-  inputs,
-  metrics,
-  onChange,
+  report,
   onGenerate,
 }: {
-  inputs: ReportInputs;
-  metrics: DerivedMetrics;
-  onChange: (patch: Partial<ReportInputs>) => void;
-  onGenerate: (repCount: number) => void;
+  report: ReportRecord;
+  onGenerate: (payload: { inputs: ReportInputs; smartCalcInputs: SmartCalcInputs; reps: Rep[]; dailyData: DailyDataPoint[] }) => void;
 }) {
-  const set = (key: keyof ReportInputs) => (value: number) => onChange({ [key]: value });
-  const [repCount, setRepCount] = useState(() => suggestedRepCount(inputs));
+  const [form, setForm] = useState<FormState>(() => seedFromReport(report));
+  const set = <K extends keyof FormState>(key: K) => (value: number) => setForm((f) => ({ ...f, [key]: value }));
+
+  const derived = deriveFromSmartCalc(
+    form.totalCashCollected,
+    form.showRatePct / 100,
+    form.closeRatePct / 100,
+    form.avgDealSize,
+    form.installmentPct / 100,
+  );
+  const suggested = suggestReps(derived.conductedCalls, form.currentDay);
+  const perRepPerDay = callsPerRepPerDay(derived.conductedCalls, form.currentDay, form.repCount);
+
+  const handleGenerate = () => {
+    const inputs: ReportInputs = {
+      newCash: derived.newCash,
+      installmentCash: derived.installmentCash,
+      monthlyGoal: form.monthlyGoal,
+      avgNewCashPerClose: form.avgDealSize,
+      totalBookedCalls: derived.conductedCalls,
+      conductedCalls: derived.conductedCalls,
+      showUps: derived.showUps,
+      totalCloses: derived.totalCloses,
+      currentDay: form.currentDay,
+      daysInMonth: form.daysInMonth,
+    };
+    const smartCalcInputs: SmartCalcInputs = {
+      totalCashCollected: form.totalCashCollected,
+      showRate: form.showRatePct / 100,
+      closeRate: form.closeRatePct / 100,
+      installmentPct: form.installmentPct / 100,
+      repCount: form.repCount,
+    };
+    onGenerate({
+      inputs,
+      smartCalcInputs,
+      reps: generateReps(inputs, form.repCount),
+      dailyData: generateDailyData(inputs),
+    });
+  };
 
   return (
     <Card className="print-avoid-break">
-      <SectionHeading title="Smart Calculator" subtitle="Enter the primary numbers — every other metric derives automatically." />
+      <SectionHeading
+        title="Smart Calculator"
+        subtitle="Enter your numbers — we'll build the whole report. Rep count auto-suggests from call volume (8–10 calls/rep/day)."
+      />
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <NumberField label="New Cash" prefix="$" value={inputs.newCash} onChange={set('newCash')} />
-        <NumberField label="Installment Cash" prefix="$" value={inputs.installmentCash} onChange={set('installmentCash')} />
-        <NumberField label="Monthly Goal" prefix="$" value={inputs.monthlyGoal} onChange={set('monthlyGoal')} />
-        <NumberField label="Avg New Cash / Close" prefix="$" value={inputs.avgNewCashPerClose} onChange={set('avgNewCashPerClose')} />
-        <NumberField label="Total Booked Calls" value={inputs.totalBookedCalls} onChange={set('totalBookedCalls')} />
-        <NumberField label="Conducted Calls" value={inputs.conductedCalls} onChange={set('conductedCalls')} />
-        <NumberField label="Show-ups" value={inputs.showUps} onChange={set('showUps')} />
-        <NumberField label="Total Closes" value={inputs.totalCloses} onChange={set('totalCloses')} />
-        <NumberField label="Current Day" value={inputs.currentDay} onChange={set('currentDay')} min={1} />
-        <NumberField label="Days in Month" value={inputs.daysInMonth} onChange={set('daysInMonth')} min={1} />
+      <div className="mb-5">
+        <div className="mb-3 text-[12px] font-medium text-ink-muted">Performance numbers</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <NumberField
+            label="Total Cash Collected"
+            prefix="$"
+            value={form.totalCashCollected}
+            onChange={set('totalCashCollected')}
+            hint="New cash + installments combined"
+          />
+          <NumberField
+            label="Show Rate"
+            suffix="%"
+            step={0.5}
+            value={form.showRatePct}
+            onChange={set('showRatePct')}
+            hint="% of total calls that show up"
+          />
+          <NumberField
+            label="Close Rate"
+            suffix="%"
+            step={0.5}
+            value={form.closeRatePct}
+            onChange={set('closeRatePct')}
+            hint="% of shows that close"
+          />
+          <NumberField
+            label="Avg Deal Size"
+            prefix="$"
+            value={form.avgDealSize}
+            onChange={set('avgDealSize')}
+            hint="Average new cash per close"
+          />
+        </div>
       </div>
 
-      <div className="mb-6 rounded-lg border border-line-soft bg-surface p-4">
-        <div className="mb-3 text-[12px] font-medium text-ink-muted">Derived automatically</div>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
-          <DerivedStat label="Total Cash" value={formatCurrency(metrics.totalCash)} />
-          <DerivedStat label="% of Goal" value={formatPercent(metrics.percentOfGoal)} />
-          <DerivedStat label="Gap" value={formatCurrency(metrics.gap)} />
-          <DerivedStat label="Closes Required" value={String(metrics.closesRequired)} />
-          <DerivedStat label="Show Rate" value={formatPercent(metrics.showRate)} />
-          <DerivedStat label="Close Rate" value={formatPercent(metrics.closeRate)} />
-          <DerivedStat label="Daily Run Rate" value={formatCurrency(metrics.dailyRunRate)} />
-          <DerivedStat label="Projected Month-End" value={formatCurrency(metrics.projectedMonthEnd)} />
+      <div className="mb-6">
+        <div className="mb-3 text-[12px] font-medium text-ink-muted">Goal & time</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <NumberField label="Monthly Goal" prefix="$" value={form.monthlyGoal} onChange={set('monthlyGoal')} />
+          <NumberField label="Day of Month" value={form.currentDay} onChange={set('currentDay')} min={1} hint="Current day" />
+          <NumberField label="Days in Month" value={form.daysInMonth} onChange={set('daysInMonth')} min={1} />
+          <NumberField
+            label="Installment %"
+            suffix="%"
+            step={0.5}
+            value={form.installmentPct}
+            onChange={set('installmentPct')}
+            hint="% of total cash that's installments"
+          />
+          <div>
+            <NumberField label="Number of Reps" value={form.repCount} onChange={set('repCount')} min={1} />
+            <button
+              type="button"
+              onClick={() => set('repCount')(suggested)}
+              className="mt-1 inline-flex items-center gap-1 rounded-full bg-navy-tint px-2 py-0.5 text-[10.5px] font-semibold text-navy hover:opacity-80"
+            >
+              AUTO: {suggested}
+            </button>
+            <span className="ml-1.5 text-[11.5px] text-ink-muted">{perRepPerDay.toFixed(1)}/day</span>
+          </div>
         </div>
       </div>
 
       <div className="rounded-lg border border-line-soft bg-surface p-4">
-        <div className="mb-3 text-[12px] font-medium text-ink-muted">
-          Generate reps &amp; daily data from the numbers above
+        <div className="mb-3 text-[12px] font-medium text-ink-muted">Will auto-calculate →</div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+          <DerivedStat label="Total Calls" value={formatNumber(derived.conductedCalls)} />
+          <DerivedStat label="Show Ups" value={formatNumber(derived.showUps)} />
+          <DerivedStat label="Closes" value={formatNumber(derived.totalCloses)} />
+          <DerivedStat label="New Cash" value={formatCurrency(derived.newCash)} />
+          <DerivedStat label="Installments" value={formatCurrency(derived.installmentCash)} />
+          <DerivedStat label={`${form.repCount} Rep${form.repCount === 1 ? '' : 's'}`} value={`${perRepPerDay.toFixed(1)} calls/rep/day`} />
         </div>
-        <div className="flex flex-wrap items-end gap-3">
-          <NumberField label="Number of Reps" value={repCount} onChange={setRepCount} min={1} className="w-32" />
-          <Button variant="primary" onClick={() => onGenerate(repCount)}>
-            ⚡ Generate Reps &amp; Daily Data
-          </Button>
-        </div>
-        <p className="mt-2 text-[12px] text-ink-muted">
-          Splits new cash, installments, calls, shows, and closes across {repCount} rep{repCount === 1 ? '' : 's'} on a
-          descending performance curve, and spreads the same totals across days 1–{inputs.currentDay}. Reps get
-          placeholder names you can overwrite with real ones. This replaces any existing rep and daily-data rows.
-        </p>
+        <Button variant="primary" onClick={handleGenerate} className="mt-4 w-full justify-center sm:w-auto">
+          ⚡ Generate Report
+        </Button>
       </div>
     </Card>
   );

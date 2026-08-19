@@ -72,6 +72,19 @@ export type DerivedFieldKey =
 
 export type Overrides = Partial<Record<DerivedFieldKey, number>>;
 
+/**
+ * The Smart Calculator's own reduced set of inputs — what the admin actually
+ * typed, kept separate from ReportInputs so re-opening a saved report shows
+ * the original percentages instead of numbers reverse-derived from totals.
+ */
+export interface SmartCalcInputs {
+  totalCashCollected: number;
+  showRate: number; // 0-1, of total calls
+  closeRate: number; // 0-1, of shows
+  installmentPct: number; // 0-1, of total cash collected
+  repCount: number;
+}
+
 export interface ReportRecord {
   id: string;
   slug: string;
@@ -86,6 +99,7 @@ export interface ReportRecord {
 
   mode: EditMode;
   inputs: ReportInputs;
+  smartCalcInputs?: SmartCalcInputs;
   overrides: Overrides;
 
   reps: Rep[];
