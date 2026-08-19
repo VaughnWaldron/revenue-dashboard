@@ -201,27 +201,31 @@ body {
     margin: 10mm;
   }
 
+  /* !important on every token: without it, an explicit dark-mode stamp
+     (:root[data-theme="dark"], specificity 0,2,0) would beat this plain
+     :root override (0,1,0) even inside @media print, since both apply
+     simultaneously when printing from an active dark session. */
   :root {
-    color-scheme: light;
-    --color-surface: #ffffff;
-    --color-surface-raised: #ffffff;
-    --color-surface-sunken: #f6f7f9;
-    --color-ink: #15171c;
-    --color-ink-soft: #494e59;
-    --color-ink-muted: #80858f;
-    --color-line: #e3e5ea;
-    --color-line-soft: #edeef2;
-    --color-navy: #2454d1;
-    --color-navy-soft: #1b3fa6;
-    --color-navy-tint: #eaf0fd;
-    --color-positive: #17845f;
-    --color-positive-tint: #e5f4ee;
-    --color-positive-glow: rgba(23, 132, 95, 0.10);
-    --color-positive-rgb: 23, 132, 95;
-    --color-warning: #a3690f;
-    --color-warning-tint: #faf0dd;
-    --color-negative: #b6362c;
-    --color-negative-tint: #faeae8;
+    color-scheme: light !important;
+    --color-surface: #ffffff !important;
+    --color-surface-raised: #ffffff !important;
+    --color-surface-sunken: #f6f7f9 !important;
+    --color-ink: #15171c !important;
+    --color-ink-soft: #494e59 !important;
+    --color-ink-muted: #80858f !important;
+    --color-line: #e3e5ea !important;
+    --color-line-soft: #edeef2 !important;
+    --color-navy: #2454d1 !important;
+    --color-navy-soft: #1b3fa6 !important;
+    --color-navy-tint: #eaf0fd !important;
+    --color-positive: #17845f !important;
+    --color-positive-tint: #e5f4ee !important;
+    --color-positive-glow: rgba(23, 132, 95, 0.10) !important;
+    --color-positive-rgb: 23, 132, 95 !important;
+    --color-warning: #a3690f !important;
+    --color-warning-tint: #faf0dd !important;
+    --color-negative: #b6362c !important;
+    --color-negative-tint: #faeae8 !important;
   }
 
   html, body {
