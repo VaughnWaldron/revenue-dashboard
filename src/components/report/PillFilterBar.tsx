@@ -30,7 +30,7 @@ export function PillFilterBar({ options, offset, onOffsetChange, compareEnabled,
   const isFiltered = offset !== 0 || compareEnabled;
 
   return (
-    <div className="no-print flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <div className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-raised py-1.5 pl-3 pr-2 text-[13px] font-medium text-ink shadow-soft">
         <CalendarIcon />
         <select

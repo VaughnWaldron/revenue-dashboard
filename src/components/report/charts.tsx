@@ -17,9 +17,9 @@ import { safeDiv } from '@/lib/calculations';
 
 const AXIS_STYLE = { fontSize: 11, fill: 'var(--color-ink-muted)' };
 const GRID_COLOR = 'var(--color-line-soft)';
-const NAVY = '#2454d1';
-const EMERALD = '#17845f';
-const EMERALD_SOFT_FILL = 'rgba(23,132,95,0.10)';
+const NAVY = 'var(--color-navy)';
+const EMERALD = 'var(--color-positive)';
+const EMERALD_SOFT_FILL = 'var(--color-positive-glow)';
 
 function mergeWithPrevious(data: DailyDataPoint[], previousData: DailyDataPoint[] | undefined, key: 'closes' | 'newCash') {
   const length = Math.max(data.length, previousData?.length ?? 0);
@@ -100,7 +100,7 @@ export function CumulativeCashChart({
         <defs>
           <linearGradient id="cashFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={EMERALD_SOFT_FILL} />
-            <stop offset="100%" stopColor="rgba(23,132,95,0)" />
+            <stop offset="100%" stopColor="transparent" />
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} stroke={GRID_COLOR} />

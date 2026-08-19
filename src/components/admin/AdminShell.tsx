@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export function AdminShell({ children, onLogout }: { children: ReactNode; onLogout: () => void }) {
   return (
@@ -16,9 +17,12 @@ export function AdminShell({ children, onLogout }: { children: ReactNode; onLogo
               <div className="text-[11px] leading-none text-ink-muted">Admin</div>
             </div>
           </Link>
-          <Button variant="ghost" size="sm" onClick={onLogout}>
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Button variant="ghost" size="sm" onClick={onLogout}>
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
       <div className="mx-auto max-w-[1180px] px-4 py-8 sm:px-8">{children}</div>

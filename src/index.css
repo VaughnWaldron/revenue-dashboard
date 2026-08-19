@@ -61,6 +61,8 @@
 
   --color-positive: #17845f;
   --color-positive-tint: #e5f4ee;
+  --color-positive-glow: rgba(23, 132, 95, 0.10);
+  --color-positive-rgb: 23, 132, 95;
   --color-warning: #a3690f;
   --color-warning-tint: #faf0dd;
   --color-negative: #b6362c;
@@ -72,6 +74,73 @@
 
 html {
   color-scheme: light;
+}
+
+/* Dark theme — a deliberate second palette, not an inversion. System
+   preference governs by default (no explicit choice stamped); the in-app
+   toggle sets data-theme explicitly and always wins over the OS setting. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --color-surface: #0e1013;
+    --color-surface-raised: #16181d;
+    --color-surface-sunken: #1c1f26;
+
+    --color-ink: #eef0f2;
+    --color-ink-soft: #b6bac3;
+    --color-ink-muted: #7e838f;
+
+    --color-line: #282c34;
+    --color-line-soft: #1f222a;
+
+    --color-navy: #5b8def;
+    --color-navy-soft: #82a9f3;
+    --color-navy-tint: rgba(91, 141, 239, 0.14);
+
+    --color-positive: #34c98d;
+    --color-positive-tint: rgba(52, 201, 141, 0.14);
+    --color-positive-glow: rgba(52, 201, 141, 0.16);
+    --color-positive-rgb: 52, 201, 141;
+    --color-warning: #eaad4d;
+    --color-warning-tint: rgba(234, 173, 77, 0.14);
+    --color-negative: #ec6f61;
+    --color-negative-tint: rgba(236, 111, 97, 0.14);
+
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.28);
+    --shadow-raised: 0 2px 8px rgba(0, 0, 0, 0.35), 0 16px 40px rgba(0, 0, 0, 0.4);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-surface: #0e1013;
+  --color-surface-raised: #16181d;
+  --color-surface-sunken: #1c1f26;
+
+  --color-ink: #eef0f2;
+  --color-ink-soft: #b6bac3;
+  --color-ink-muted: #7e838f;
+
+  --color-line: #282c34;
+  --color-line-soft: #1f222a;
+
+  --color-navy: #5b8def;
+  --color-navy-soft: #82a9f3;
+  --color-navy-tint: rgba(91, 141, 239, 0.14);
+
+  --color-positive: #34c98d;
+  --color-positive-tint: rgba(52, 201, 141, 0.14);
+  --color-positive-glow: rgba(52, 201, 141, 0.16);
+  --color-positive-rgb: 52, 201, 141;
+  --color-warning: #eaad4d;
+  --color-warning-tint: rgba(234, 173, 77, 0.14);
+  --color-negative: #ec6f61;
+  --color-negative-tint: rgba(236, 111, 97, 0.14);
+
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.28);
+  --shadow-raised: 0 2px 8px rgba(0, 0, 0, 0.35), 0 16px 40px rgba(0, 0, 0, 0.4);
 }
 
 body {
@@ -113,10 +182,10 @@ body {
    status signal, not a distraction. */
 @keyframes live-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(31, 122, 92, 0.35);
+    box-shadow: 0 0 0 0 rgba(var(--color-positive-rgb), 0.35);
   }
   50% {
-    box-shadow: 0 0 0 4px rgba(31, 122, 92, 0);
+    box-shadow: 0 0 0 4px rgba(var(--color-positive-rgb), 0);
   }
 }
 
@@ -124,11 +193,35 @@ body {
   animation: live-pulse 2.6s ease-in-out infinite;
 }
 
-/* Print / PDF export */
+/* Print / PDF export — always light and professional, regardless of the
+   viewer's current on-screen theme. */
 @media print {
   @page {
     size: landscape;
     margin: 10mm;
+  }
+
+  :root {
+    color-scheme: light;
+    --color-surface: #ffffff;
+    --color-surface-raised: #ffffff;
+    --color-surface-sunken: #f6f7f9;
+    --color-ink: #15171c;
+    --color-ink-soft: #494e59;
+    --color-ink-muted: #80858f;
+    --color-line: #e3e5ea;
+    --color-line-soft: #edeef2;
+    --color-navy: #2454d1;
+    --color-navy-soft: #1b3fa6;
+    --color-navy-tint: #eaf0fd;
+    --color-positive: #17845f;
+    --color-positive-tint: #e5f4ee;
+    --color-positive-glow: rgba(23, 132, 95, 0.10);
+    --color-positive-rgb: 23, 132, 95;
+    --color-warning: #a3690f;
+    --color-warning-tint: #faf0dd;
+    --color-negative: #b6362c;
+    --color-negative-tint: #faeae8;
   }
 
   html, body {

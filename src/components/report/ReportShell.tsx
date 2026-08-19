@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { ReportRecord } from '@/lib/types';
 import { compareBenchmarks, computeMetrics } from '@/lib/calculations';
 import { generateHistoricalPeriod, listPeriodOptions } from '@/lib/historicalGenerate';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { ReportHeader } from './ReportHeader';
 import { PillFilterBar } from './PillFilterBar';
 import { ExecutiveSummary } from './ExecutiveSummary';
@@ -41,13 +42,16 @@ export function ReportShell({ report, animate = true }: { report: ReportRecord; 
     <div className="print-container mx-auto flex w-full max-w-[1180px] flex-col gap-6 px-4 py-8 sm:px-8 sm:py-10">
       <ReportHeader report={headerReport} showLive={offset === 0} />
 
-      <PillFilterBar
-        options={periodOptions}
-        offset={offset}
-        onOffsetChange={setOffset}
-        compareEnabled={compareEnabled}
-        onCompareChange={setCompareEnabled}
-      />
+      <div className="no-print flex flex-wrap items-center justify-between gap-2">
+        <PillFilterBar
+          options={periodOptions}
+          offset={offset}
+          onOffsetChange={setOffset}
+          compareEnabled={compareEnabled}
+          onCompareChange={setCompareEnabled}
+        />
+        <ThemeToggle />
+      </div>
 
       <ExecutiveSummary
         inputs={period.inputs}
