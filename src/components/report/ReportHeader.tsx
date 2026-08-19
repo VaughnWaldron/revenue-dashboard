@@ -33,7 +33,7 @@ export function ReportHeader({ report, showLive = true }: { report: ReportRecord
         )}
         <div>
           <div className="text-[13px] text-ink-muted">{report.agencyName || 'Agency'}</div>
-          <h1 className="font-display text-[26px] font-bold tracking-[-0.01em] text-ink sm:text-[30px]">
+          <h1 className="font-hero text-[27px] font-semibold tracking-[-0.015em] text-ink sm:text-[32px]">
             {report.clientName || 'Client Report'}
           </h1>
           <div className="mt-1 text-[13px] text-ink-soft">

@@ -14,6 +14,12 @@ const STATUS_TONE: Record<ReportRecord['status'], 'positive' | 'neutral' | 'warn
   archived: 'warning',
 };
 
+const STATUS_LABEL: Record<ReportRecord['status'], string> = {
+  published: 'Published',
+  draft: 'Draft',
+  archived: 'Archived',
+};
+
 export function ReportList() {
   const navigate = useNavigate();
   const [reports, setReports] = useState<ReportRecord[] | null>(null);
@@ -134,7 +140,7 @@ export function ReportList() {
                   <div className="mt-0.5 text-[12.5px] text-ink-muted">{report.month} {report.year}</div>
                 </div>
                 <div className="flex flex-col items-end gap-1.5">
-                  <Badge tone={STATUS_TONE[report.status]}>{report.status}</Badge>
+                  <Badge tone={STATUS_TONE[report.status]}>{STATUS_LABEL[report.status]}</Badge>
                   <span className="text-[10.5px] text-ink-muted">{DATA_STATUS_LABEL[report.dataStatus]}</span>
                 </div>
               </div>

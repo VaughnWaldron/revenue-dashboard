@@ -4,9 +4,40 @@
 @import "@fontsource/geist-sans/600.css";
 @import "@fontsource/geist-sans/700.css";
 
+/* Switzer — self-hosted (Fontshare, free for embedding). Reserved for the
+   client name and the hero total-cash figure only; everything else,
+   including all other numbers, stays in Geist Sans. Real products that read
+   as "branded" pair one distinctive display face with a neutral data face —
+   they never use the display face for data itself. */
+@font-face {
+  font-family: "Switzer";
+  src: url("/fonts/switzer-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Switzer";
+  src: url("/fonts/switzer-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Switzer";
+  src: url("/fonts/switzer-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Switzer";
+  src: url("/fonts/switzer-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: "Geist Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-hero: "Switzer", "Geist Sans", ui-sans-serif, system-ui, sans-serif;
 
   /* Surfaces — true white/cool-neutral, no warm cream tint */
   --color-surface: #ffffff;

@@ -3,17 +3,20 @@ import type { DerivedMetrics } from '@/lib/calculations';
 import { Card, SectionHeading } from '@/components/ui/Card';
 import { MetricTile } from '@/components/ui/MetricTile';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { CountUp } from '@/components/ui/CountUp';
+import { HeroCurrency } from '@/components/ui/HeroCurrency';
+import { DeltaBadge } from '@/components/ui/DeltaBadge';
 import { formatCurrency, formatPercent } from '@/lib/format';
 
 export function ExecutiveSummary({
   inputs,
   metrics,
   animate,
+  previousTotalCash,
 }: {
   inputs: ReportInputs;
   metrics: DerivedMetrics;
   animate: boolean;
+  previousTotalCash?: number;
 }) {
   const goalTone = metrics.percentOfGoal >= 1 ? 'positive' : metrics.percentOfGoal >= 0.75 ? 'default' : 'warning';
 
@@ -23,9 +26,12 @@ export function ExecutiveSummary({
 
       <div className="mb-6 flex flex-col gap-3 rounded-lg border border-line-soft bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="text-[12.5px] text-ink-muted">Total cash collected</div>
-          <div className="mt-1 font-display text-[36px] font-bold leading-none tracking-tight text-ink">
-            <CountUp value={metrics.totalCash} format="currency" animate={animate} />
+          <div className="flex items-center gap-2 text-[12.5px] text-ink-muted">
+            Total cash collected
+            {previousTotalCash !== undefined && <DeltaBadge current={metrics.totalCash} previous={previousTotalCash} />}
+          </div>
+          <div className="mt-1 font-hero text-[38px] font-semibold leading-none tracking-tight text-ink">
+            <HeroCurrency value={metrics.totalCash} animate={animate} />
           </div>
           <div className="mt-1.5 text-[13px] text-ink-muted">of {formatCurrency(inputs.monthlyGoal)} monthly goal</div>
         </div>
@@ -38,7 +44,7 @@ export function ExecutiveSummary({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
         <MetricTile label="New Cash" value={inputs.newCash} format="currency" animate={animate} />
         <MetricTile label="Installment Cash" value={inputs.installmentCash} format="currency" animate={animate} />
         <MetricTile label="% of Goal" value={metrics.percentOfGoal} format="percent" tone={goalTone} animate={animate} />

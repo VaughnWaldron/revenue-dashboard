@@ -37,7 +37,7 @@ export function MonthPacing({ inputs, metrics, animate }: { inputs: ReportInputs
         <div className="mt-1.5 text-[12.5px] text-ink-muted">{metrics.daysRemaining} days remaining in the month</div>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
         <MetricTile label="Days Remaining" value={metrics.daysRemaining} format="number" animate={animate} />
         <MetricTile label="Daily Run Rate" value={metrics.dailyRunRate} format="currency" animate={animate} caption="current pace" />
         <MetricTile

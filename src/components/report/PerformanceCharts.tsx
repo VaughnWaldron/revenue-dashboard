@@ -4,10 +4,12 @@ import { CallsTrendChart, CumulativeCashChart, DailyClosesChart, DailyNewCashCha
 
 export function PerformanceCharts({
   dailyData,
+  previousDailyData,
   inputs,
   totalCash,
 }: {
   dailyData: DailyDataPoint[];
+  previousDailyData?: DailyDataPoint[];
   inputs: ReportInputs;
   totalCash: number;
 }) {
@@ -17,12 +19,18 @@ export function PerformanceCharts({
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <Card className="print-avoid-break">
-        <SectionHeading title="Daily Closes" subtitle={`${inputs.currentDay}-day trend`} />
-        <DailyClosesChart data={dailyData} />
+        <SectionHeading
+          title="Daily Closes"
+          subtitle={previousDailyData ? `${inputs.currentDay}-day trend · dashed line is previous period` : `${inputs.currentDay}-day trend`}
+        />
+        <DailyClosesChart data={dailyData} previousData={previousDailyData} />
       </Card>
       <Card className="print-avoid-break">
-        <SectionHeading title="Daily New Cash" subtitle={`${inputs.currentDay}-day trend`} />
-        <DailyNewCashChart data={dailyData} />
+        <SectionHeading
+          title="Daily New Cash"
+          subtitle={previousDailyData ? `${inputs.currentDay}-day trend · dashed line is previous period` : `${inputs.currentDay}-day trend`}
+        />
+        <DailyNewCashChart data={dailyData} previousData={previousDailyData} />
       </Card>
       <Card className="print-avoid-break lg:col-span-2">
         <SectionHeading title="Cumulative Cash vs. Goal Pace" subtitle="Solid line: cash collected · Dashed line: straight-line goal pace" />

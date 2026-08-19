@@ -7,7 +7,7 @@ export function SalesPerformance({ inputs, metrics, animate }: { inputs: ReportI
   return (
     <Card className="print-avoid-break">
       <SectionHeading title="Sales Performance" subtitle="Call volume, show behavior, and conversion" />
-      <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
         <MetricTile label="Booked Calls" value={inputs.totalBookedCalls} format="number" animate={animate} />
         <MetricTile label="Conducted Calls" value={inputs.conductedCalls} format="number" animate={animate} />
         <MetricTile label="Show-ups" value={inputs.showUps} format="number" animate={animate} />

@@ -33,21 +33,21 @@ export function MetricTile({
   icon,
 }: MetricTileProps) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-1.5 text-[12.5px] text-ink-muted">
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-1.5 text-[12px] text-ink-muted">
         {icon}
         {label}
       </div>
       <div
         className={cn(
           'font-display font-semibold tabular-nums tracking-[-0.015em]',
-          size === 'lg' ? 'text-[34px] leading-none' : 'text-[21px] leading-none',
+          size === 'lg' ? 'text-[32px] leading-none' : 'text-[19px] leading-none',
           TONE_TEXT[tone],
         )}
       >
         <CountUp value={value} format={format} digits={formatDigits} animate={animate} />
       </div>
-      {caption && <div className="text-[12.5px] text-ink-muted">{caption}</div>}
+      {caption && <div className="text-[11.5px] text-ink-muted">{caption}</div>}
     </div>
   );
 }
