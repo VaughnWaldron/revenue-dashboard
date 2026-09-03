@@ -12,17 +12,19 @@ export function ExecutiveSummary({
   metrics,
   animate,
   previousTotalCash,
+  periodNoun = 'monthly',
 }: {
   inputs: ReportInputs;
   metrics: DerivedMetrics;
   animate: boolean;
   previousTotalCash?: number;
+  periodNoun?: 'monthly' | 'quarterly';
 }) {
   const goalTone = metrics.percentOfGoal >= 1 ? 'positive' : metrics.percentOfGoal >= 0.75 ? 'default' : 'warning';
 
   return (
     <Card className="print-avoid-break">
-      <SectionHeading title="Executive Revenue Summary" subtitle="Cash collected against the monthly target" />
+      <SectionHeading title="Executive Revenue Summary" subtitle={`Cash collected against the ${periodNoun} target`} />
 
       <div className="mb-6 flex flex-col gap-3 rounded-lg border border-line-soft bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -33,7 +35,7 @@ export function ExecutiveSummary({
           <div className="mt-1 font-hero text-[38px] font-semibold leading-none tracking-tight text-ink">
             <HeroCurrency value={metrics.totalCash} animate={animate} />
           </div>
-          <div className="mt-1.5 text-[13px] text-ink-muted">of {formatCurrency(inputs.monthlyGoal)} monthly goal</div>
+          <div className="mt-1.5 text-[13px] text-ink-muted">of {formatCurrency(inputs.monthlyGoal)} {periodNoun} goal</div>
         </div>
         <div className="w-full sm:w-64">
           <div className="mb-1.5 flex items-center justify-between text-[12.5px] font-medium">

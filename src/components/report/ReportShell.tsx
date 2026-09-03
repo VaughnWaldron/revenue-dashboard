@@ -66,6 +66,7 @@ export function ReportShell({ report, animate = true }: { report: ReportRecord; 
         metrics={metrics}
         animate={animate}
         previousTotalCash={previousMetrics?.totalCash}
+        periodNoun={granularity === 'quarter' ? 'quarterly' : 'monthly'}
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

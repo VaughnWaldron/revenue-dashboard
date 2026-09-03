@@ -116,7 +116,8 @@ export function PillFilterBar({
           </button>
         )}
 
-        {((granularity === 'month' && offset > 0) || granularity === 'quarter') && (
+        {granularity === 'quarter' && <span className="text-[11.5px] text-ink-muted">Annualized</span>}
+        {granularity === 'month' && offset > 0 && (
           <span className="text-[11.5px] text-ink-muted">Modeled from current-month figures</span>
         )}
       </div>
