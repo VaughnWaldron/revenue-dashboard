@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { ReportRecord } from '@/lib/types';
 import { compareBenchmarks, computeMetrics } from '@/lib/calculations';
-import { generateHistoricalPeriod, listPeriodOptions } from '@/lib/historicalGenerate';
+import { generateHistoricalPeriod, generateQuarterPeriod, listPeriodOptions } from '@/lib/historicalGenerate';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { ReportHeader } from './ReportHeader';
 import { PillFilterBar } from './PillFilterBar';
@@ -13,19 +13,23 @@ import { PerformanceCharts } from './PerformanceCharts';
 import { BenchmarksSection } from './BenchmarksSection';
 
 export function ReportShell({ report, animate = true }: { report: ReportRecord; animate?: boolean }) {
+  const [granularity, setGranularity] = useState<'month' | 'quarter'>('month');
   const [offset, setOffset] = useState(0);
   const [compareEnabled, setCompareEnabled] = useState(false);
 
   const periodOptions = useMemo(() => listPeriodOptions(report), [report]);
-  const period = useMemo(() => generateHistoricalPeriod(report, offset), [report, offset]);
+  const period = useMemo(
+    () => (granularity === 'quarter' ? generateQuarterPeriod(report) : generateHistoricalPeriod(report, offset)),
+    [report, offset, granularity],
+  );
   const previousPeriod = useMemo(
-    () => (compareEnabled ? generateHistoricalPeriod(report, offset + 1) : null),
-    [report, offset, compareEnabled],
+    () => (granularity === 'month' && compareEnabled ? generateHistoricalPeriod(report, offset + 1) : null),
+    [report, offset, compareEnabled, granularity],
   );
 
   // Manual overrides were set against the report's real, current-month
-  // numbers — they don't apply to a fabricated historical month.
-  const overrides = offset === 0 ? report.overrides : {};
+  // numbers — they don't apply to a fabricated historical month or quarter.
+  const overrides = granularity === 'month' && offset === 0 ? report.overrides : {};
   const metrics = useMemo(() => computeMetrics(period.inputs, overrides), [period.inputs, overrides]);
   const previousMetrics = useMemo(
     () => (previousPeriod ? computeMetrics(previousPeriod.inputs, {}) : null),
@@ -36,19 +40,23 @@ export function ReportShell({ report, animate = true }: { report: ReportRecord; 
     [metrics, period.inputs, report.benchmarks],
   );
 
+  const periodLabel = granularity === 'quarter' ? 'Last Quarter' : `${period.month} ${period.year}`;
   const headerReport = { ...report, month: period.month, year: period.year };
+  const isCurrentMonth = granularity === 'month' && offset === 0;
 
   return (
     <div className="print-container mx-auto flex w-full max-w-[1180px] flex-col gap-6 px-4 py-8 sm:px-8 sm:py-10">
-      <ReportHeader report={headerReport} showLive={offset === 0} />
+      <ReportHeader report={headerReport} showLive={isCurrentMonth} periodLabel={periodLabel} />
 
-      <div className="no-print flex flex-wrap items-center justify-between gap-2">
+      <div className="no-print flex flex-wrap items-start justify-between gap-3">
         <PillFilterBar
           options={periodOptions}
           offset={offset}
           onOffsetChange={setOffset}
           compareEnabled={compareEnabled}
           onCompareChange={setCompareEnabled}
+          granularity={granularity}
+          onGranularityChange={setGranularity}
         />
         <ThemeToggle />
       </div>
@@ -78,7 +86,7 @@ export function ReportShell({ report, animate = true }: { report: ReportRecord; 
 
       <footer className="print-avoid-break flex items-center justify-between border-t border-line pt-5 text-[12px] text-ink-muted">
         <span>{report.agencyName} &mdash; Confidential</span>
-        <span>{period.month} {period.year}</span>
+        <span>{periodLabel}</span>
       </footer>
     </div>
   );

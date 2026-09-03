@@ -16,7 +16,15 @@ function formatUpdated(iso: string): string {
   }
 }
 
-export function ReportHeader({ report, showLive = true }: { report: ReportRecord; showLive?: boolean }) {
+export function ReportHeader({
+  report,
+  showLive = true,
+  periodLabel,
+}: {
+  report: ReportRecord;
+  showLive?: boolean;
+  periodLabel?: string;
+}) {
   return (
     <header className="print-avoid-break flex flex-col gap-5 border-b border-line pb-6 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-start gap-4">
@@ -37,7 +45,7 @@ export function ReportHeader({ report, showLive = true }: { report: ReportRecord
             {report.clientName || 'Client Report'}
           </h1>
           <div className="mt-1 text-[13px] text-ink-soft">
-            {report.month} {report.year}
+            {periodLabel ?? `${report.month} ${report.year}`}
           </div>
         </div>
       </div>

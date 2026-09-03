@@ -1,6 +1,7 @@
 import { MONTH_NAMES, daysInMonth as daysInMonthFor } from './types';
 import type { DailyDataPoint, ReportInputs, ReportRecord, Rep } from './types';
 import { generateDailyData, generateReps } from './generate';
+import { safeDiv } from './calculations';
 
 export interface PeriodOption {
   label: string;
@@ -85,5 +86,53 @@ export function generateHistoricalPeriod(anchor: ReportRecord, offset: number): 
     inputs,
     reps: generateReps(inputs, repCount),
     dailyData: generateDailyData(inputs),
+  };
+}
+
+/**
+ * "Last Quarter" — the three fully-completed months before the report's own
+ * (still-in-progress) month, summed together. Deliberately excludes the
+ * current month itself, since a quarter view implies a closed-out period,
+ * not one still being collected.
+ */
+export function generateQuarterPeriod(anchor: ReportRecord): GeneratedPeriod {
+  const months = [1, 2, 3].map((offset) => generateHistoricalPeriod(anchor, offset));
+
+  const sum = (key: keyof ReportInputs) => months.reduce((s, m) => s + m.inputs[key], 0);
+  const newCash = sum('newCash');
+  const totalCloses = sum('totalCloses');
+
+  const inputs: ReportInputs = {
+    newCash,
+    installmentCash: sum('installmentCash'),
+    monthlyGoal: sum('monthlyGoal'),
+    avgNewCashPerClose: Math.round(safeDiv(newCash, totalCloses)) || anchor.inputs.avgNewCashPerClose,
+    totalBookedCalls: sum('totalBookedCalls'),
+    conductedCalls: sum('conductedCalls'),
+    showUps: sum('showUps'),
+    totalCloses,
+    currentDay: sum('daysInMonth'),
+    daysInMonth: sum('daysInMonth'),
+  };
+
+  const repCount = Math.max(1, anchor.reps.length || 3);
+
+  // Chronological day-by-day trend across the full quarter: oldest month
+  // first, each month's days offset to continue where the last left off.
+  const dailyData: DailyDataPoint[] = [];
+  let dayOffset = 0;
+  for (const m of [...months].reverse()) {
+    for (const d of m.dailyData) {
+      dailyData.push({ ...d, day: d.day + dayOffset });
+    }
+    dayOffset += m.inputs.daysInMonth;
+  }
+
+  return {
+    month: 'Last Quarter',
+    year: anchor.year,
+    inputs,
+    reps: generateReps(inputs, repCount),
+    dailyData,
   };
 }
