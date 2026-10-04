@@ -40,6 +40,16 @@ export function ReportShell({ report, animate = true }: { report: ReportRecord; 
     [metrics, period.inputs, report.benchmarks],
   );
 
+  // An in-progress month (e.g. day 4 of 31) should compare against the prior
+  // month's pace at the same point, not its full-month total.
+  const inProgress = period.inputs.currentDay < period.inputs.daysInMonth;
+  const previousTotalCash =
+    previousMetrics && previousPeriod
+      ? inProgress
+        ? previousMetrics.totalCash * (period.inputs.currentDay / Math.max(1, previousPeriod.inputs.daysInMonth))
+        : previousMetrics.totalCash
+      : undefined;
+
   const periodLabel = granularity === 'quarter' ? 'Last Quarter' : `${period.month} ${period.year}`;
   const headerReport = { ...report, month: period.month, year: period.year };
   const isCurrentMonth = granularity === 'month' && offset === 0;
@@ -65,12 +75,17 @@ export function ReportShell({ report, animate = true }: { report: ReportRecord; 
         inputs={period.inputs}
         metrics={metrics}
         animate={animate}
-        previousTotalCash={previousMetrics?.totalCash}
+        previousTotalCash={previousTotalCash}
         periodNoun={granularity === 'quarter' ? 'quarterly' : 'monthly'}
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <MonthPacing inputs={period.inputs} metrics={metrics} animate={animate} />
+        <MonthPacing
+          inputs={period.inputs}
+          metrics={metrics}
+          animate={animate}
+          periodNoun={granularity === 'quarter' ? 'quarterly' : 'monthly'}
+        />
         <SalesPerformance inputs={period.inputs} metrics={metrics} animate={animate} />
       </div>
 

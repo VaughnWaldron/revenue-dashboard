@@ -2,6 +2,7 @@ import { MONTH_NAMES, daysInMonth as daysInMonthFor } from './types';
 import type { DailyDataPoint, ReportInputs, ReportRecord, Rep } from './types';
 import { generateDailyData, generateReps } from './generate';
 import { safeDiv } from './calculations';
+import { deriveFromSmartCalc } from './smartCalculator';
 
 export interface PeriodOption {
   label: string;
@@ -54,29 +55,39 @@ export function generateHistoricalPeriod(anchor: ReportRecord, offset: number): 
   const month = MONTH_NAMES[((totalIdx % 12) + 12) % 12];
   const totalDays = daysInMonthFor(month, year);
 
-  const monthlyGrowth = 0.055; // assumed trailing month-over-month growth
-  const noise = 0.85 + seededRandom(offset) * 0.3; // 0.85–1.15, deterministic per offset
-  const decay = Math.pow(1 / (1 + monthlyGrowth), offset) * noise;
-  const scale = (v: number) => Math.max(0, Math.round(v * decay));
+  // The anchor month is usually still in progress (e.g. day 4 of 31), so its
+  // cash is a partial total and can't scale a finished month. Each past month
+  // is built goal-first: goal stays close to the anchor's (slightly below),
+  // and the month finished at or a bit above it. Everything else follows from
+  // the anchor's own conversion rates via the Smart Calculator's chain.
+  const goalFactor = Math.pow(1 / 1.01, offset) * (0.95 + seededRandom(offset) * 0.06); // ~0.93-1.00
+  const monthlyGoal = Math.round(anchor.inputs.monthlyGoal * goalFactor);
+  const attainment = 0.98 + seededRandom(offset + 7) * 0.12; // 98%-110%
+  const totalCash = Math.round(monthlyGoal * attainment);
+
+  const a = anchor.inputs;
+  const anchorCash = a.newCash + a.installmentCash;
+  const jitter = (seed: number) => 0.97 + seededRandom(offset + seed) * 0.06;
+  const showRate = Math.min(0.95, (safeDiv(a.showUps, a.conductedCalls) || 0.7) * jitter(3));
+  const closeRate = Math.min(0.9, (safeDiv(a.totalCloses, a.showUps) || 0.2) * jitter(5));
+  const installmentPct = anchorCash > 0 ? safeDiv(a.installmentCash, anchorCash) : 0.1;
+  const avgDealSize = a.avgNewCashPerClose || 5000;
+
+  const derived = deriveFromSmartCalc(totalCash, showRate, closeRate, avgDealSize, installmentPct);
+  const bookedRatio = Math.max(1, safeDiv(a.totalBookedCalls, a.conductedCalls) || 1);
 
   const inputs: ReportInputs = {
-    newCash: scale(anchor.inputs.newCash),
-    installmentCash: scale(anchor.inputs.installmentCash),
-    monthlyGoal: scale(anchor.inputs.monthlyGoal),
-    avgNewCashPerClose: anchor.inputs.avgNewCashPerClose,
-    totalBookedCalls: scale(anchor.inputs.totalBookedCalls),
-    conductedCalls: scale(anchor.inputs.conductedCalls),
-    showUps: scale(anchor.inputs.showUps),
-    totalCloses: scale(anchor.inputs.totalCloses),
+    newCash: derived.newCash,
+    installmentCash: derived.installmentCash,
+    monthlyGoal,
+    avgNewCashPerClose: avgDealSize,
+    totalBookedCalls: Math.round(derived.conductedCalls * bookedRatio),
+    conductedCalls: derived.conductedCalls,
+    showUps: derived.showUps,
+    totalCloses: derived.totalCloses,
     currentDay: totalDays, // a past month is fully elapsed
     daysInMonth: totalDays,
   };
-
-  // Scaling every field by the same factor preserves ratios, but rounding
-  // independently can rarely push one just past another — clamp the chain.
-  inputs.showUps = Math.min(inputs.showUps, inputs.conductedCalls);
-  inputs.totalCloses = Math.min(inputs.totalCloses, inputs.showUps);
-  inputs.conductedCalls = Math.min(inputs.conductedCalls, inputs.totalBookedCalls);
 
   const repCount = Math.max(1, anchor.reps.length || 3);
 
